@@ -9,6 +9,7 @@ import {
   Put,
   UsePipes,
   ValidationPipe,
+  Query,
 } from '@nestjs/common';
 import { ArticleService } from './article.service';
 import { AuthGuard } from 'src/user/guards/auth.guard';
@@ -18,9 +19,18 @@ import { User } from 'src/user/user.entity';
 import { IArticleResponse } from './types/articleResponse.interface';
 import { DeleteResult } from 'typeorm';
 import { UpdateArticleDto } from './dto/updateArticleDto';
+import { IArticlesResponse } from './types/articlesResponse.interface';
 @Controller('articles')
 export class ArticleController {
   constructor(private readonly articleService: ArticleService) {}
+  @Get()
+  async getAll(
+    @UserD('id') currentUserId: number,
+    @Query() query: any,
+  ): Promise<IArticlesResponse> {
+    return await this.articleService.findAll(currentUserId, query);
+  }
+
   @Post()
   @UseGuards(AuthGuard)
   async create(
