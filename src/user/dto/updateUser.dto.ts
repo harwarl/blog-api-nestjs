@@ -1,0 +1,9 @@
+import { IsEmail } from 'class-validator';
+
+export class UpdateUserDto {
+  readonly email: string;
+  readonly username: string;
+  readonly password: string;
+  readonly bio: string;
+  readonly image: string;
+}
