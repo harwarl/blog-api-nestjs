@@ -71,4 +71,22 @@ export class ArticleController {
   ): Promise<DeleteResult> {
     return this.articleService.deleteArticle(currentUserId, slug);
   }
+
+  @Post(':slug/favourite')
+  @UseGuards(AuthGuard)
+  async likeArticle(
+    @UserD('id') currentUserId: number,
+    @Param('slug') slug: string,
+  ): Promise<IArticleResponse> {
+    return await this.articleService.likeArticle(currentUserId, slug);
+  }
+
+  @Delete(':slug/favourite')
+  @UseGuards(AuthGuard)
+  async unlikeArticle(
+    @UserD('id') currentUserId: number,
+    @Param('slug') slug: string,
+  ): Promise<IArticleResponse> {
+    return await this.articleService.dislikeArticle(currentUserId, slug);
+  }
 }

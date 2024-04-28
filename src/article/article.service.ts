@@ -23,6 +23,10 @@ export class ArticleService {
     private dataSource: DataSource,
   ) {}
 
+  private buildArticleResponse(article: Article): IArticleResponse {
+    return { article };
+  }
+
   async findAll(currentUserId: number, query: any): Promise<IArticlesResponse> {
     // const queryBuilder: SelectQueryBuilder<Article> =
     //   this.articleRepository.createQueryBuilder('articles');
@@ -32,13 +36,11 @@ export class ArticleService {
       .getRepository(Article)
       .createQueryBuilder('articles')
       .leftJoinAndSelect('articles.author', 'article');
-
     if (query.tag) {
       queryBuilder.where('articles.tagList LIKE :tag', {
         tag: `%${query.tag}`,
       });
     }
-
     if (query.author) {
       const author = await this.userRepository.findOne({
         where: { username: query.author },
@@ -47,19 +49,15 @@ export class ArticleService {
         id: author.id,
       });
     }
-
     queryBuilder.orderBy('articles.createdAt', 'DESC');
     const articlesCount = await queryBuilder.getCount();
     if (query.limit) {
       queryBuilder.limit(query.limit);
     }
-
     if (query.offset) {
       queryBuilder.offset(query.offset);
     }
-
     const articles = await queryBuilder.getMany();
-
     return {
       articles,
       articlesCount,
@@ -80,10 +78,6 @@ export class ArticleService {
     newArticle.author = currentUser;
     const article = await this.articleRepository.save(newArticle);
     return this.buildArticleResponse(article);
-  }
-
-  buildArticleResponse(article: Article): IArticleResponse {
-    return { article };
   }
 
   private async findArticleBySlug(slug: string): Promise<Article> {
@@ -140,5 +134,58 @@ export class ArticleService {
     article.slug = this.getSlug(updateArticleDto.title);
     const updatedArticle = await this.articleRepository.save(article);
     return this.buildArticleResponse(updatedArticle);
+  }
+
+  async likeArticle(
+    currentUserId: number,
+    slug: string,
+  ): Promise<IArticleResponse> {
+    const article = await this.findArticleBySlug(slug);
+    if (!article)
+      throw new HttpException('Article does not exist', HttpStatus.NOT_FOUND);
+    const user = await this.userRepository.findOne({
+      where: { id: currentUserId },
+      relations: ['favourites'],
+    });
+    //check if user liked the article already
+    const isNotFavourited =
+      user.favourites.findIndex(
+        (articleInfav) => articleInfav.id === article.id,
+      ) === -1;
+
+    if (isNotFavourited) {
+      user.favourites.push(article);
+      article.favouritesCount++;
+      await this.userRepository.save(user);
+      await this.articleRepository.save(article);
+    }
+
+    return this.buildArticleResponse(article);
+  }
+
+  async dislikeArticle(
+    currentUserId: number,
+    slug: string,
+  ): Promise<IArticleResponse> {
+    const article = await this.findArticleBySlug(slug);
+    if (!article)
+      throw new HttpException('Article does not exist', HttpStatus.NOT_FOUND);
+    const user = await this.userRepository.findOne({
+      where: { id: currentUserId },
+      relations: ['favourites'],
+    });
+    //check if user liked the article already
+    const articleIndex = user.favourites.findIndex(
+      (articleInfav) => articleInfav.id === article.id,
+    );
+
+    if (articleIndex >= 0) {
+      user.favourites.splice(articleIndex, 1);
+      article.favouritesCount--;
+      await this.userRepository.save(user);
+      await this.articleRepository.save(article);
+    }
+
+    return this.buildArticleResponse(article);
   }
 }
