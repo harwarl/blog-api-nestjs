@@ -71,4 +71,31 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](LICENSE).
+
 # blog-api-nestjs
+
+## REST_API
+
+The Rest api to the blog api is described below,
+
+## Authentication
+
+## <ins>Create User</ins>
+
+### Request
+
+- POST /user
+
+```bash
+curl --location 'http://localhost:3000/user' \
+--header 'x-api-key: live_sk_65ab9353145cab9557ab93df95e31d62629c343' \
+--header 'app-id: 9a2f92ad-3613-4074-9027-3b63de7149d8' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "user": {
+        "username": "AKintunde Bello",
+        "email": "AkinsTheMan@gmail.com",
+        "password": "AkinsTheMan@123454"
+    }
+}'
+```
