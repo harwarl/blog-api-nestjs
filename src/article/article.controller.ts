@@ -40,6 +40,15 @@ export class ArticleController {
     return this.articleService.createArticle(currentUser, createArticleDto);
   }
 
+  @Get('feed')
+  @UseGuards(AuthGuard)
+  async getFeed(
+    @UserD('id') currentUserId: number,
+    @Query() query: any,
+  ): Promise<IArticlesResponse> {
+    return await this.articleService.getFeed(currentUserId, query);
+  }
+
   @Get(':slug')
   @UseGuards(AuthGuard)
   async getSingleArticle(

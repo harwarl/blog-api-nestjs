@@ -12,6 +12,7 @@ import { User } from 'src/user/user.entity';
 import { IArticleResponse } from './types/articleResponse.interface';
 import slugify from 'slugify';
 import { IArticlesResponse } from './types/articlesResponse.interface';
+import { Follow } from 'src/profile/follow.entity';
 
 @Injectable()
 export class ArticleService {
@@ -21,6 +22,8 @@ export class ArticleService {
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
     private dataSource: DataSource,
+    @InjectRepository(Follow)
+    private readonly followRepository: Repository<Follow>,
   ) {}
 
   private buildArticleResponse(article: Article): IArticleResponse {
@@ -49,6 +52,19 @@ export class ArticleService {
         id: author.id,
       });
     }
+
+    if (query.favourited) {
+      const author = await this.userRepository.findOne({
+        where: { username: query.favourited },
+        relations: ['favourites'],
+      });
+      const ids = author.favourites.map((el) => el.id);
+      if (ids.length > 0) {
+        queryBuilder.andWhere('articles.authorId IN (:...ids)', { ids }); //there is a bug for when ids is an empty list
+      } else {
+        queryBuilder.andWhere('1=0'); //this line is always false
+      }
+    }
     queryBuilder.orderBy('articles.createdAt', 'DESC');
     const articlesCount = await queryBuilder.getCount();
     if (query.limit) {
@@ -57,7 +73,57 @@ export class ArticleService {
     if (query.offset) {
       queryBuilder.offset(query.offset);
     }
+
+    let favouriteIds: number[] = [];
+    if (currentUserId) {
+      const currentUser = await this.userRepository.findOne({
+        where: { id: currentUserId },
+        relations: ['favourites'],
+      });
+      favouriteIds = currentUser.favourites.map((favourite) => favourite.id);
+    }
     const articles = await queryBuilder.getMany();
+    const articlesWithFavourited = articles.map((article) => {
+      const favourited = favouriteIds.includes(article.id);
+      return { ...article, favourited };
+    });
+
+    return {
+      articles: articlesWithFavourited,
+      articlesCount,
+    };
+  }
+
+  async getFeed(currentUserId: number, query: any): Promise<IArticlesResponse> {
+    const follows = await this.followRepository.find({
+      where: {
+        followerId: currentUserId,
+      },
+    });
+
+    if (follows.length === 0) {
+      return { articles: [], articlesCount: 0 };
+    }
+
+    const followingUserIds = follows.map((follow) => follow.followingId);
+    const queryBuilder = this.dataSource
+      .getRepository(Article)
+      .createQueryBuilder('articles')
+      .leftJoinAndSelect('articles.author', 'author')
+      .where('articles.authorId IN (:...ids)', { ids: followingUserIds });
+
+    queryBuilder.orderBy('articles.createdAt', 'DESC');
+    const articlesCount = await queryBuilder.getCount();
+
+    if (query.limit) {
+      queryBuilder.limit(query.limit);
+    }
+    if (query.offset) {
+      queryBuilder.offset(query.offset);
+    }
+
+    const articles = await queryBuilder.getMany();
+
     return {
       articles,
       articlesCount,
