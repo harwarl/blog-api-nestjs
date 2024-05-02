@@ -13,6 +13,8 @@ import { IArticleResponse } from './types/articleResponse.interface';
 import slugify from 'slugify';
 import { IArticlesResponse } from './types/articlesResponse.interface';
 import { Follow } from 'src/profile/follow.entity';
+import { Comment } from './comment.entity';
+import { ICommentResponse } from './types/commentResponse.interface';
 
 @Injectable()
 export class ArticleService {
@@ -24,6 +26,8 @@ export class ArticleService {
     private dataSource: DataSource,
     @InjectRepository(Follow)
     private readonly followRepository: Repository<Follow>,
+    @InjectRepository(Comment)
+    private readonly commentRepository: Repository<Comment>,
   ) {}
 
   private buildArticleResponse(article: Article): IArticleResponse {
@@ -253,5 +257,72 @@ export class ArticleService {
     }
 
     return this.buildArticleResponse(article);
+  }
+
+  async commentArticle(
+    currentUserId: number,
+    slug: string,
+    comment: string,
+  ): Promise<ICommentResponse> {
+    const article = await this.articleRepository.findOne({
+      where: {
+        slug: slug,
+      },
+    });
+
+    if (!article) {
+      throw new HttpException('Article does not exist', HttpStatus.NOT_FOUND);
+    }
+
+    const commentExists = await this.commentRepository.findOne({
+      where: {
+        articleSlug: slug,
+        commenterId: currentUserId,
+      },
+    });
+
+    if (!commentExists) {
+      const commentOnArticle = new Comment();
+      commentOnArticle.articleSlug = article.slug;
+      commentOnArticle.commenterId = currentUserId;
+      commentOnArticle.comment = comment;
+      await this.commentRepository.save(commentOnArticle);
+    } else {
+      commentExists['comment'] = comment;
+      await this.commentRepository.save(commentExists);
+    }
+
+    return {
+      article,
+      comment: commentExists.comment,
+    };
+  }
+
+  async uncommentArticle(
+    currentUserId: number,
+    slug: string,
+  ): Promise<IArticleResponse> {
+    const article = await this.articleRepository.findOne({
+      where: {
+        slug: slug,
+      },
+    });
+
+    if (!article) {
+      throw new HttpException('Article does not exist', HttpStatus.NOT_FOUND);
+    }
+
+    const commentExists = await this.commentRepository.findOne({
+      where: {
+        articleSlug: slug,
+        commenterId: currentUserId,
+      },
+    });
+
+    await this.commentRepository.delete(commentExists.id);
+
+    return {
+      article,
+    };
   }
 }

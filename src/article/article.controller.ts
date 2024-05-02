@@ -21,6 +21,7 @@ import { DeleteResult } from 'typeorm';
 import { UpdateArticleDto } from './dto/updateArticleDto';
 import { IArticlesResponse } from './types/articlesResponse.interface';
 import { BackendValidationPipe } from 'src/shared/pipes/backendValidation.pipe';
+import { ICommentResponse } from './types/commentResponse.interface';
 @Controller('articles')
 export class ArticleController {
   constructor(private readonly articleService: ArticleService) {}
@@ -80,6 +81,29 @@ export class ArticleController {
     @Param('slug') slug: string,
   ): Promise<DeleteResult> {
     return this.articleService.deleteArticle(currentUserId, slug);
+  }
+
+  @Post(':slug/comment')
+  @UseGuards(AuthGuard)
+  async commentArticle(
+    @UserD('id') currentUserId,
+    @Param('slug') slug: string,
+    @Body('comment') comment: string,
+  ): Promise<ICommentResponse> {
+    return await this.articleService.commentArticle(
+      currentUserId,
+      slug,
+      comment,
+    );
+  }
+
+  @Delete(':slug/comment')
+  @UseGuards(AuthGuard)
+  async uncommentArticle(
+    @UserD('id') currentUserId,
+    @Param('slug') slug: string,
+  ): Promise<IArticleResponse> {
+    return await this.articleService.uncommentArticle(currentUserId, slug);
   }
 
   @Post(':slug/favourite')
