@@ -20,6 +20,7 @@ import { IArticleResponse } from './types/articleResponse.interface';
 import { DeleteResult } from 'typeorm';
 import { UpdateArticleDto } from './dto/updateArticleDto';
 import { IArticlesResponse } from './types/articlesResponse.interface';
+import { BackendValidationPipe } from 'src/shared/pipes/backendValidation.pipe';
 @Controller('articles')
 export class ArticleController {
   constructor(private readonly articleService: ArticleService) {}
@@ -59,7 +60,7 @@ export class ArticleController {
 
   @Put(':slug')
   @UseGuards(AuthGuard)
-  @UsePipes(new ValidationPipe())
+  @UsePipes(new BackendValidationPipe())
   async updateArticle(
     @UserD('id') currentUserId: number,
     @Body('article') updateArticleDto: UpdateArticleDto,

@@ -16,6 +16,9 @@ export class UserService {
     @InjectRepository(User) private readonly userRepository: Repository<User>,
   ) {}
   async createUser(createUserDto: CreateUserDto): Promise<User> {
+    const errorResponse = {
+      errors: {},
+    };
     const userByEmail = await this.userRepository.findOneBy({
       email: createUserDto.email,
     });
@@ -23,11 +26,15 @@ export class UserService {
       username: createUserDto.username,
     });
 
+    if (userByEmail) {
+      errorResponse.errors['email'] = 'has already been taken';
+    }
+
+    if (userByUsername) {
+      errorResponse.errors['username'] = 'has already been taken';
+    }
     if (userByEmail || userByUsername) {
-      throw new HttpException(
-        'Email or username is taken',
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
+      throw new HttpException(errorResponse, HttpStatus.UNPROCESSABLE_ENTITY);
     }
     const newUser = new User();
     Object.assign(newUser, createUserDto);
@@ -35,6 +42,10 @@ export class UserService {
   }
 
   async login(loginUserDto: LoginUserDto): Promise<User> {
+    const errorResponse = {
+      errors: {},
+    };
+
     const user = await this.userRepository.findOne({
       where: {
         email: loginUserDto.email,
@@ -49,19 +60,14 @@ export class UserService {
       },
     });
 
+    errorResponse.errors['credentials'] = 'are not valid';
     if (!user) {
-      throw new HttpException(
-        'Credentials are not valid',
-        HttpStatus.UNPROCESSABLE_ENTITY,
-      );
+      throw new HttpException(errorResponse, HttpStatus.UNPROCESSABLE_ENTITY);
     }
 
     const isPasswordValid = await compare(loginUserDto.password, user.password);
     if (!isPasswordValid) {
-      throw new HttpException(
-        'Credentials are not valid',
-        HttpStatus.BAD_REQUEST,
-      );
+      throw new HttpException(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
     delete user.password;
