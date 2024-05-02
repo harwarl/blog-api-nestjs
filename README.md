@@ -99,3 +99,19 @@ curl --location 'http://localhost:3000/user' \
     }
 }'
 ```
+
+### Response
+
+```json
+{
+  "user": {
+    "username": "AKintunde Bello",
+    "email": "AkinsTheMan@gmail.com",
+    "password": "$2b$10$MIhK.MgomdPwrVhWY1MTyOP7e8xUG95ZiTK0IoLZUzHU0vIde75hC",
+    "id": 14,
+    "bio": "",
+    "image": "",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQsImVtYWlsIjoiQWtpbnNUaGVNYW5AZ21haWwuY29tIiwidXNlcm5hbWUiOiJBS2ludHVuZGUgQmVsbG8iLCJpYXQiOjE3MTQ2OTM4MjEsImV4cCI6MTcxNDY5NDcyMX0.KwBXTmZJLOjArYg09c7ARd-reXkJtKJqzeoH3smlweM"
+  }
+}
+```
