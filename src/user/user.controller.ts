@@ -24,6 +24,7 @@ export class UserController {
     @Body('user') createUserDto: CreateUserDto,
   ): Promise<IUserResponse> {
     const user = await this.userService.createUser(createUserDto);
+    delete user.password;
     return this.userService.buildUserResponse(user);
   }
 

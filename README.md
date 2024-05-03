@@ -78,7 +78,7 @@ Nest is [MIT licensed](LICENSE).
 
 The Rest api to the blog api is described below,
 
-## Authentication
+## AUTHENTICATION
 
 ## <ins>Create User</ins>
 
@@ -107,7 +107,6 @@ curl --location 'http://localhost:3000/user' \
   "user": {
     "username": "AKintunde Bello",
     "email": "AkinsTheMan@gmail.com",
-    "password": "$2b$10$MIhK.MgomdPwrVhWY1MTyOP7e8xUG95ZiTK0IoLZUzHU0vIde75hC",
     "id": 14,
     "bio": "",
     "image": "",
@@ -115,3 +114,126 @@ curl --location 'http://localhost:3000/user' \
   }
 }
 ```
+
+## <ins>User Login</ins>
+
+### Request
+
+- POST /user/login
+
+```bash
+curl --location 'http://localhost:3000/user/login' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "user":  {
+        "email": "AkinsTheMan@gmail.com",
+        "password": "AkinsTheMan@123454"
+    }
+}'
+```
+
+### Response
+
+```json
+{
+  "user": {
+    "id": 14,
+    "username": "AKintunde Bello",
+    "email": "AkinsTheMan@gmail.com",
+    "bio": "",
+    "image": "",
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQsImVtYWlsIjoiQWtpbnNUaGVNYW5AZ21haWwuY29tIiwidXNlcm5hbWUiOiJBS2ludHVuZGUgQmVsbG8iLCJpYXQiOjE3MTQ2OTQxMDMsImV4cCI6MTcxNDY5NTAwM30.UNYYq8FXiSepeHUFHlHat8_PnTdXi8yqxEeLKtXBTPo"
+  }
+}
+```
+
+## USER
+
+### <ins>Update User</ins>
+
+### Request
+
+```
+curl --location --request PUT 'http://localhost:3000/user' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQsImVtYWlsIjoiQWtpbnNUaGVNYW5AZ21haWwuY29tIiwidXNlcm5hbWUiOiJBS2ludHVuZGUgQmVsbG8iLCJpYXQiOjE3MTQ2OTQxMDMsImV4cCI6MTcxNDY5NTAwM30.UNYYq8FXiSepeHUFHlHat8_PnTdXi8yqxEeLKtXBTPo' \
+--data '{
+    "user": {
+        "bio": "Some bio",
+        "image": "https://i.stack.imgur.com/xHWG8jpg"
+    }
+}'
+```
+
+### Response
+
+```json
+{
+  "user": {
+    "id": 14,
+    "username": "AKintunde Bello",
+    "email": "AkinsTheMan@gmail.com",
+    "bio": "Some bio",
+    "image": "https://i.stack.imgur.com/xHWG8jpg"
+  }
+}
+```
+
+## <ins>Get User</ins>
+
+### Request
+
+```
+curl --location 'http://localhost:3000/user' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MTQsImVtYWlsIjoiQWtpbnNUaGVNYW5AZ21haWwuY29tIiwidXNlcm5hbWUiOiJBS2ludHVuZGUgQmVsbG8iLCJpYXQiOjE3MTQ2OTQxMDMsImV4cCI6MTcxNDY5NTAwM30.UNYYq8FXiSepeHUFHlHat8_PnTdXi8yqxEeLKtXBTPo'
+```
+
+### Response
+
+```json
+{
+  "user": {
+    "id": 14,
+    "username": "AKintunde Bello",
+    "email": "AkinsTheMan@gmail.com",
+    "bio": "Some bio",
+    "image": "https://i.stack.imgur.com/xHWG8jpg"
+  }
+}
+```
+
+## ARTICLE
+### <ins>Create Article</ins>
+### Request
+
+```
+curl --location 'http://localhost:3000/articles' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiZW1haWwiOiJoYXJ3YXJsODdAZ21haWwuY29tIiwidXNlcm5hbWUiOiJkb2t1biIsImlhdCI6MTcxNDY3MTEyNSwiZXhwIjoxNzE0NjcyMDI1fQ.JMbPPRm6XUj1NutlNUAUgghx0711L4GUXTK1Rpv6hkU' \
+--data '{
+    "article": {
+        "title": "This is my first article",
+        "description": "This is my description",
+        "body": "This is the body",
+        "tagList": ["This is it"]
+    }
+}'
+```
+
+### <ins>Get Article By Slug</ins>
+### Request
+
+```
+curl --location 'http://localhost:3000/articles/this-is-my-first-article--685hbx.w89l7' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiZW1haWwiOiJoYXJ3YXJsODdAZ21haWwuY29tIiwidXNlcm5hbWUiOiJkb2t1biIsImlhdCI6MTcxNDY3MTEyNSwiZXhwIjoxNzE0NjcyMDI1fQ.JMbPPRm6XUj1NutlNUAUgghx0711L4GUXTK1Rpv6hkU'
+```
+
+### <ins>Get Article By Slug</ins>
+### Request
+
+```
+curl --location 'http://localhost:3000/articles/this-is-my-first-article--685hbx.w89l7' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MiwiZW1haWwiOiJoYXJ3YXJsODdAZ21haWwuY29tIiwidXNlcm5hbWUiOiJkb2t1biIsImlhdCI6MTcxNDY3MTEyNSwiZXhwIjoxNzE0NjcyMDI1fQ.JMbPPRm6XUj1NutlNUAUgghx0711L4GUXTK1Rpv6hkU'
+```
+
+
